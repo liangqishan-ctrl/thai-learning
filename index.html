@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>泰语口语听力特训</title>
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --success: #10b981;
+            --error: #ef4444;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            min-height: 100vh;
+            background: var(--card-bg);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            position: relative;
+            padding: 12px 0 16px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .header-btn {
+            position: absolute;
+            left: 0;
+            top: 10px;
+            background: #f1f5f9;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text-main);
+            cursor: pointer;
+            display: none;
+        }
+        h1 { font-size: 20px; color: var(--text-main); }
+        .subtitle { margin-top: 4px; font-size: 13px; color: var(--text-sub); }
+
+        /* 目录卡片 */
+        #home-view { display: block; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding-bottom: 24px;
+        }
+        .lesson-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: left;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .lesson-card:active { background: #f1f5f9; }
+        .lesson-card.done {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+        }
+        .l-tag { font-size: 12px; font-weight: 600; color: var(--primary); margin-bottom: 4px; }
+        .l-title { font-size: 15px; font-weight: 700; color: var(--text-main); }
+        .l-status { position: absolute; right: 12px; top: 12px; font-size: 14px; display: none; color: var(--primary); }
+        .lesson-card.done .l-status { display: block; }
+
+        /* 答题区 */
+        #quiz-view { display: none; padding-bottom: 40px; }
+        .q-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .q-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .q-num { font-size: 14px; font-weight: 700; color: var(--text-sub); }
+        .play-btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .play-btn:active { transform: scale(0.92); }
+        .options-list { display: flex; flex-direction: column; gap: 8px; }
+        .opt-btn {
+            width: 100%;
+            text-align: left;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            background: #ffffff;
+            font-size: 15px;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+        .opt-btn.active {
+            border-color: var(--primary);
+            background: #ecfdf5;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .opt-btn.correct-ans {
+            border-color: var(--success);
+            background: var(--success);
+            color: #fff !important;
+            font-weight: 600;
+        }
+        .opt-btn.wrong-ans {
+            border-color: var(--error);
+            background: var(--error);
+            color: #fff !important;
+        }
+
+        /* 展开解析 */
+        .reveal-box {
+            display: none;
+            margin-top: 14px;
+            padding: 12px;
+            background: #f8fafc;
+            border-left: 3px solid var(--primary);
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .primary-action-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .primary-action-btn:active { background: var(--primary-hover); }
+
+        /* 评分结果 */
+        #result-box {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f0fdf4;
+            border-radius: 14px;
+            border: 1px solid #bbf7d0;
+            text-align: center;
+        }
+        .score-val { font-size: 38px; font-weight: 800; color: var(--primary); }
+        .score-desc { font-size: 14px; color: var(--text-sub); margin: 6px 0 16px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <button class="header-btn" id="nav-back-btn" onclick="openHome()">◀ 目录</button>
+        <h1 id="title-text">泰语口语听力特训</h1>
+        <p class="subtitle" id="subtitle-text">第一季 · 18 讲全场景通关</p>
+    </header>
+
+    <div id="home-view">
+        <div class="grid" id="lesson-cards-wrap"></div>
+    </div>
+
+    <div id="quiz-view">
+        <div id="quiz-questions-wrap"></div>
+        <button id="submit-quiz-btn" class="primary-action-btn" onclick="submitAssessment()">提交答案并评分</button>
+
+        <div id="result-box">
+            <div>本次听力得分</div>
+            <div class="score-val" id="score-text">0</div>
+            <div class="score-desc" id="remark-text"></div>
+            <button class="primary-action-btn" id="next-stage-btn" onclick="advanceNextLesson()">进入下一讲 ➔</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 错误捕获（避免手机白屏无提示）
+    window.onerror = function(msg, url, line) {
+        alert("页面运行遇到异常: " + msg + " (行: " + line + ")");
+        return false;
+    };
+
+    // 内存降级存储（解决手机端 file:// 下 LocalStorage 报安全错误导致白屏）
+    const memoryStore = {};
+    const safeStore = {
+        get: function(key) {
+            try {
+                return window.localStorage ? window.localStorage.getItem(key) : memoryStore[key];
+            } catch(e) {
+                return memoryStore[key] || null;
+            }
+        },
+        set: function(key, val) {
+            try {
+                if (window.localStorage) window.localStorage.setItem(key, val);
+            } catch(e) {
+                memoryStore[key] = val;
+            }
+        }
+    };
+
+    const fullCourseData = [
+        {
+            id: 1, title: "日常问候与礼貌",
+            list: [
+                ["สวัสดีครับ สบายดีไหมครับ", "Sawatdee krap, sabai dee mai krap?", "你好，最近好吗？", ["A. 早上好", "B. 你好，最近好吗？", "C. 谢谢你", "D. 再见"], 1],
+                ["สบายดีครับ ขอบคุณครับ", "Sabai dee krap, khop khun krap", "我很好，谢谢", ["A. 我很好，谢谢", "B. 不太好", "C. 你叫什么名字", "D. 请坐"], 0],
+                ["ขอบคุณมากครับ", "Khop khun mak krap", "非常感谢", ["A. 对不起", "B. 没关系", "C. 非常感谢", "D. 很高兴认识你"], 2],
+                ["ขอโทษครับ ไม่เป็นไร", "Khor thot krap, mai pen rai", "对不起，没关系", ["A. 你好吗", "B. 对不起，没关系", "C. 太贵了", "D. 明天见"], 1],
+                ["ลาก่อน แล้วพบกันใหม่", "La gon, laew pob gan mai", "再见，下次见", ["A. 再见，下次见", "B. 祝你好运", "C. 晚安", "D. 欢迎光临"], 0]
+            ]
+        },
+        {
+            id: 2, title: "相识与自我介绍",
+            list: [
+                ["ยินดีที่ได้รู้จักครับ", "Yin dee tee dai roo jak krap", "很高兴认识你", ["A. 很高兴认识你", "B. 洗手间在哪", "C. 我不明白", "D. 没问题"], 0],
+                ["คุณชื่ออะไรครับ", "Khun cheu arai krap?", "你叫什么名字？", ["A. 你多大了？", "B. 你叫什么名字？", "C. 你来自哪里？", "D. 你去哪？"], 1],
+                ["ผมเป็นคนจีนครับ", "Pom pen khon jeen krap", "我是中国人", ["A. 我是泰国人", "B. 我是中国人", "C. 我是老师", "D. 我是游客"], 1],
+                ["คุณพูดภาษาไทยได้ไหม", "Khun phut pa-sa thai dai mai?", "你会说泰语吗？", ["A. 你听得懂吗？", "B. 你会说英语吗？", "C. 你会说泰语吗？", "D. 说太快了"], 2],
+                ["พูดได้นิดหน่อยครับ", "Phut dai nit noi krap", "能说一点点", ["A. 完全不会", "B. 能说一点点", "C. 说得很流利", "D. 听不懂"], 1]
+            ]
+        },
+        {
+            id: 3, title: "餐厅点餐与就餐",
+            list: [
+                ["ขอเมนูหน่อยครับ", "Khor menu noi krap", "请给我菜单", ["A. 买单", "B. 请给我菜单", "C. 有热水吗", "D. 很好吃"], 1],
+                ["เอาผัดไทยหนึ่งที่ครับ", "Ao pad thai neung tee krap", "要一份泰式炒粉", ["A. 一杯冰水", "B. 冬阴功汤", "C. 芒果饭", "D. 要一份泰式炒粉"], 3],
+                ["ไม่ใส่ผักชีนะครับ", "Mai sai pak chee na krap", "不要放香菜", ["A. 不要放辣椒", "B. 不要放香菜", "C. 不要放糖", "D. 不要味精"], 1],
+                ["เผ็ดนิดหน่อยครับ", "Pet nit noi krap", "微辣 / 稍微辣一点", ["A. 特别辣", "B. 不辣", "C. 微辣 / 稍微辣一点", "D. 甜一点"], 2],
+                ["เก็บตังค์ด้วยครับ", "Gep tang duay krap", "买单 / 结账", ["A. 买单 / 结账", "B. 打包", "C. 加米饭", "D. 很好吃"], 0]
+            ]
+        },
+        {
+            id: 4, title: "夜市购物与砍价",
+            list: [
+                ["อันนี้ราคาเท่าไหร่ครับ", "An nee ra-ka tao rai krap?", "这个多少钱？", ["A. 这个好看吗", "B. 这个多少钱？", "C. 有别的颜色吗", "D. 可以试穿吗"], 1],
+                ["แพงเกินไปหน่อยครับ", "Paeng gern pai noi krap", "有点太贵了", ["A. 很便宜", "B. 有点太贵了", "C. 刚刚好", "D. 质量不错"], 1],
+                ["ลดราคาได้ไหมครับ", "Lot ra-ka dai mai krap?", "能便宜点吗？", ["A. 能便宜点吗？", "B. 能退货吗？", "C. 包邮吗？", "D. 能刷卡吗？"], 0],
+                ["เอาอันนี้สองชิ้นครับ", "Ao an nee song chin krap", "我要这个两个", ["A. 换一个", "B. 我要这个两个", "C. 不要这个", "D. 拿大号的"], 1],
+                ["รับบัตรเครดิตไหมครับ", "Rap bat credit mai krap?", "可以刷信用卡吗？", ["A. 可以刷信用卡吗？", "B. 可以微信吗？", "C. 有零钱吗？", "D. 能开发票吗？"], 0]
+            ]
+        },
+        {
+            id: 5, title: "交通出行与问路",
+            list: [
+                ["ห้องน้ำอยู่ที่ไหนครับ", "Hong nam yoo tee nai krap?", "洗手间在哪里？", ["A. 出口在哪里", "B. 洗手间在哪里？", "C. 酒店在哪里", "D. 电梯在哪里"], 1],
+                ["ตรงไปแล้วเลี้ยวซ้าย", "Trong pai laew liao sai", "直走然后左转", ["A. 一直走然后左转", "B. 右转直走", "C. 掉头", "D. 在对面"], 0],
+                ["ไปสนามบินครับ", "Pai sa-nam-bin krap", "去机场", ["A. 去火车站", "B. 去码头", "C. 去机场", "D. 去夜市"], 2],
+                ["เปิดมิเตอร์ด้วยครับ", "Poet meter duay krap", "请打表（出租车）", ["A. 请开空调", "B. 请打表", "C. 多少钱", "D. 到了叫我"], 1],
+                ["จอดตรงนี้ครับ", "Jot trong nee krap", "停在这里", ["A. 停在这里", "B. 开快点", "C. 不要停", "D. 拐弯"], 0]
+            ]
+        },
+        {
+            id: 6, title: "时间与数字认知",
+            list: [
+                ["หนึ่ง สอง สาม สี่ ห้า", "Neung, song, sam, see, ha", "一 二 三 四 五", ["A. 六 七 八 九 十", "B. 一 二 三 四 五", "C. 星期一到五", "D. 上午下午"], 1],
+                ["ตอนนี้กี่โมงแล้วครับ", "Ton nee gee mong laew krap?", "现在几点了？", ["A. 今天几号", "B. 星期几", "C. 现在几点了？", "D. 还要多久"], 2],
+                ["สิบโมงเช้าครับ", "Sip mong chao krap", "上午十点", ["A. 早上七点", "B. 上午十点", "C. 下午两点", "D. 晚上十点"], 1],
+                ["วันนี้วันอะไรครับ", "Wan nee wan arai krap?", "今天星期几？", ["A. 今天热吗", "B. 今天星期几？", "C. 几点下班", "D. 明天放假吗"], 1],
+                ["พรุ่งนี้เจอกันครับ", "Phrung nee jer gan krap", "明天见", ["A. 明天见", "B. 昨天到了", "C. 后天走", "D. 马上来"], 0]
+            ]
+        },
+        {
+            id: 7, title: "酒店办理与入住",
+            list: [
+                ["ผมจองห้องไว้แล้วครับ", "Pom jong hong wai laew krap", "我已经预订了房间", ["A. 我要退房", "B. 我已经预订了房间", "C. 有空房吗", "D. 钥匙丢了"], 1],
+                ["เช็คอินได้กี่โมงครับ", "Check-in dai gee mong krap?", "几点可以办理入住？", ["A. 几点退房？", "B. 几点可以办理入住？", "C. 早餐几点开始？", "D. 泳池在哪？"], 1],
+                ["รหัสไวไฟคืออะไรครับ", "Ra-hat Wi-Fi keu arai krap?", "Wi-Fi密码是多少？", ["A. 房号是多少", "B. Wi-Fi密码是多少？", "C. 押金多少钱", "D. 电话号码"], 1],
+                ["ขอผ้าเช็ดตัวเพิ่มครับ", "Khor pha chet tua perm krap", "请多加一条毛巾", ["A. 打扫房间", "B. 请多加一条毛巾", "C. 空调坏了", "D. 换个枕头"], 1],
+                ["เช็คเอาท์ตอนนี้ครับ", "Check-out ton nee krap", "现在办理退房", ["A. 现在办理入住", "B. 现在办理退房", "C. 延长一天", "D. 寄存行李"], 1]
+            ]
+        },
+        {
+            id: 8, title: "紧急情况与求助",
+            list: [
+                ["ช่วยด้วยครับ", "Chuay duay krap!", "救命 / 请帮帮我！", ["A. 不好意思", "B. 救命 / 请帮帮我！", "C. 别客气", "D. 太好了"], 1],
+                ["ผมหลงทางครับ", "Pom long thang krap", "我迷路了", ["A. 我迷路了", "B. 我饿了", "C. 找到了", "D. 我到了"], 0],
+                ["กระเป๋าเงินหายครับ", "Kra-pao ngern hai krap", "钱包丢了", ["A. 手机丢了", "B. 护照丢了", "C. 钱包丢了", "D. 钥匙丢了"], 2],
+                ["โทรหาตำรวจให้หน่อย", "Tho ha tam-ruat hai noi", "请帮我报警/叫警察", ["A. 叫救护车", "B. 请帮我报警/叫警察", "C. 叫出租车", "D. 打给我朋友"], 1],
+                ["โรงพยาบาลอยู่ที่ไหน", "Rong pha-ya-ban yoo tee nai?", "医院在哪里？", ["A. 警察局在哪", "B. 药店在哪", "C. 医院在哪里？", "D. 大使馆在哪"], 2]
+            ]
+        },
+        {
+            id: 9, title: "药店与身体不适",
+            list: [
+                ["ผมรู้สึกไม่ค่อยสบาย", "Pom roo seuk mai koi sa-bai", "我觉得不太舒服", ["A. 我很开心", "B. 我觉得不太舒服", "C. 我吃饱了", "D. 我很累"], 1],
+                ["ปวดหัวและเป็นไข้ครับ", "Puat hua laew pen khai krap", "头疼而且发烧", ["A. 肚子疼拉肚子", "B. 头疼而且发烧", "C. 嗓子哑了", "D. 腿摔伤了"], 1],
+                ["มียาแก้ปวดไหมครับ", "Mee ya gae puat mai krap?", "有止痛药吗？", ["A. 有感冒药吗", "B. 有止痛药吗？", "C. 有创可贴吗", "D. 有晕车药吗"], 1],
+                ["กินยาวันละกี่ครั้งครับ", "Kin ya wan la gee khrang krap?", "药一天吃几次？", ["A. 饭前还是饭后", "B. 药一天吃几次？", "C. 一次吃几粒", "D. 孕妇能吃吗"], 1],
+                ["กินหลังอาหารสามเวลา", "Kin lang a-han sam wela", "一日三餐饭后服用", ["A. 睡前吃一次", "B. 饭前空腹吃", "C. 一日三餐饭后服用", "D. 痛时才吃"], 2]
+            ]
+        },
+        {
+            id: 10, title: "咖啡馆与冷饮店",
+            list: [
+                ["ขอกาแฟเย็นหนึ่งแก้ว", "Khor ka-fae yen neung kaew", "请给我一杯冰咖啡", ["A. 一杯热茶", "B. 请给我一杯冰咖啡", "C. 一杯奶茶", "D. 一瓶水"], 1],
+                ["หวานน้อยนะครับ", "Wan noi na krap", "微糖 / 少糖", ["A. 不要糖", "B. 多放糖", "C. 微糖 / 少糖", "D. 全糖正常"], 2],
+                ["ไม่ใส่น้ำตาลครับ", "Mai sai nam-tan krap", "不加糖", ["A. 不加糖", "B. 不加奶", "C. 不加冰", "D. 少冰"], 0],
+                ["ทานที่นี่หรือกลับบ้าน", "Than tee nee reu klap ban?", "在这里吃还是打包？", ["A. 大杯还小杯", "B. 冷的还热的", "C. 在这里吃还是打包？", "D. 加奶吗"], 2],
+                ["เอากลับบ้านครับ", "Ao klap ban krap", "打包带走", ["A. 在这里喝", "B. 打包带走", "C. 送给朋友", "D. 不要了"], 1]
+            ]
+        },
+        {
+            id: 11, title: "7-11便利店日常",
+            list: [
+                ["อุ่นให้หน่อยครับ", "Oon hai noi krap", "请帮我加热一下（便当）", ["A. 请打包", "B. 请帮我加热一下", "C. 拿吸管", "D. 不要袋子"], 1],
+                ["รับถุงพลาสติกไหมครับ", "Rap thoong plastic mai krap?", "需要塑料袋吗？", ["A. 要发票吗", "B. 需要塑料袋吗？", "C. 有会员吗", "D. 要餐具吗"], 1],
+                ["ไม่รับถุงครับ", "Mai rap thoong krap", "不需要塑料袋", ["A. 给我大袋子", "B. 不需要塑料袋", "C. 多要一个袋子", "D. 帮我装好"], 1],
+                ["เติมเงินมือถือได้ไหม", "Term ngern meu-theu dai mai?", "可以充手机话费吗？", ["A. 能刷卡吗", "B. 可以充手机话费吗？", "C. 能取现吗", "D. 借充电宝"], 1],
+                ["ทั้งหมดร้อยบาทครับ", "Tang mot roi baht krap", "一共100泰铢", ["A. 一共50铢", "B. 一共100泰铢", "C. 找零20铢", "D. 优惠10铢"], 1]
+            ]
+        },
+        {
+            id: 12, title: "天气与防晒防雨",
+            list: [
+                ["วันนี้อากาศร้อนมาก", "Wan nee a-kat ron mak", "今天天气非常热", ["A. 今天下大雨", "B. 今天很凉爽", "C. 今天天气非常热", "D. 天气阴沉"], 2],
+                ["ฝนตกหนักข้างนอก", "Fon tok nak khang nok", "外面下暴雨了", ["A. 外面刮大风", "B. 外面出太阳了", "C. 外面下暴雨了", "D. 起大雾了"], 2],
+                ["อย่าลืมพกร่มนะครับ", "Ya leum phok rom na krap", "别忘了带雨伞", ["A. 别忘涂防晒", "B. 别忘了带雨伞", "C. 别忘戴墨镜", "D. 穿上外套"], 1],
+                ["เปิดแอร์หน่อยครับ", "Poet air noi krap", "请开空调", ["A. 请关窗户", "B. 请开电风扇", "C. 请开空调", "D. 空调太冷了"], 2],
+                ["ตอนเย็นอากาศดีมาก", "Ton yen a-kat dee mak", "傍晚天气很舒适", ["A. 早上很冷", "B. 中午太晒", "C. 傍晚天气很舒适", "D. 夜里起风"], 2]
+            ]
+        },
+        {
+            id: 13, title: "泰式按摩与Spa",
+            list: [
+                ["นวดแผนไทยสองชั่วโมง", "Nuat phaen thai song chua mong", "泰式古法按摩两小时", ["A. 足底按一小时", "B. 精油按半小时", "C. 泰式古法按摩两小时", "D. 头部按摩"], 2],
+                ["เจ็บมาก เบาๆ หน่อยครับ", "Jep mak, bao bao noi krap", "好痛，请轻一点", ["A. 很舒服", "B. 好痛，请轻一点", "C. 请用力一点", "D. 按按肩膀"], 1],
+                ["ขอหนักกว่านี้หน่อยครับ", "Khor nak kwa nee noi krap", "请更重/用力一点", ["A. 请更重/用力一点", "B. 别按这里", "C. 太疼受不了", "D. 结束了吗"], 0],
+                ["สบายมาก รู้สึกผ่อนคลาย", "Sabai mak, roo seuk phon khlai", "非常舒服，很放松", ["A. 有点酸痛", "B. 非常舒服，很放松", "C. 还要多久", "D. 没力气了"], 1],
+                ["นี่เงินทิปครับ ขอบคุณครับ", "Nee ngern tip krap, khop khun krap", "这是小费，谢谢", ["A. 请找零钱", "B. 这是小费，谢谢", "C. 押金多少", "D. 费用多少"], 1]
+            ]
+        },
+        {
+            id: 14, title: "租摩托车与加油",
+            list: [
+                ["เช่ามอเตอร์ไซค์วันละเท่าไหร่", "Chao motorcycle wan la tao rai?", "租摩托车一天多少钱？", ["A. 买摩托车多少钱", "B. 租摩托车一天多少钱？", "C. 修车要多少", "D. 停车费多少"], 1],
+                ["ต้องใช้มัดจำเท่าไหร่ครับ", "Tong chai mat-jam tao rai krap?", "需要交多少押金？", ["A. 要带头盔吗", "B. 需要交多少押金？", "C. 油箱满吗", "D. 几天起租"], 1],
+                ["เติมน้ำมันเก้าห้าเต็มถัง", "Term nam-man kao ha tem thang", "加95号汽油加满", ["A. 加柴油加满", "B. 加91号一百铢", "C. 加95号汽油加满", "D. 换机油"], 2],
+                ["ใส่หมวกกันน็อคด้วยนะครับ", "Sai muak gan knock duay na krap", "请佩戴安全头盔", ["A. 请系安全带", "B. 请佩戴安全头盔", "C. 出示驾照", "D. 注意限速"], 1],
+                ["ต้องคืนรถกี่โมงครับ", "Tong kheun rot gee mong krap?", "最晚几点还车？", ["A. 最晚几点还车？", "B. 哪里取车", "C. 能开去外地吗", "D. 车钥匙呢"], 0]
+            ]
+        },
+        {
+            id: 15, title: "旅游景点与寺庙",
+            list: [
+                ["ค่าเข้าชมคนละเท่าไหร่", "Kha khao chom khon la tao rai?", "门票每人多少钱？", ["A. 观光车多少钱", "B. 门票每人多少钱？", "C. 几点关门", "D. 有导游吗"], 1],
+                ["ถ่ายรูปตรงนี้ได้ไหมครับ", "Thai roop trong nee dai mai krap?", "这里可以拍照吗？", ["A. 可以进去吗", "B. 这里可以拍照吗？", "C. 可以抽烟吗", "D. 可以吃东西"], 1],
+                ["ช่วยถ่ายรูปให้หน่อยได้ไหม", "Chuay thai roop hai noi dai mai?", "能帮我拍张照吗？", ["A. 能帮我拍张照吗？", "B. 借我手机用用", "C. 一起合照吗", "D. 洗照片了吗"], 0],
+                ["วัดเปิดกี่โมง ปิดกี่โมง", "Wat poet gee mong, pit gee mong?", "寺庙几点开门、关门？", ["A. 寺庙几点开门、关门？", "B. 要穿长裤吗", "C. 进庙脱鞋吗", "D. 门票含香火吗"], 0],
+                ["ต้องถอดรองเท้าก่อนเข้า", "Tong thot rong-thao gon khao", "进入前需要脱鞋", ["A. 保持肃静", "B. 禁止拍照", "C. 进入前需要脱鞋", "D. 系好鞋带"], 2]
+            ]
+        },
+        {
+            id: 16, title: "外币兑换与ATM",
+            list: [
+                ["แลกเงินที่ไหนได้ครับ", "Laek ngern tee nai dai krap?", "在哪里可以换钱？", ["A. ATM机在哪里", "B. 在哪里可以换钱？", "C. 银行开门了吗", "D. 汇率是多少"], 1],
+                ["อัตราแลกเปลี่ยนวันนี้เท่าไหร่", "Attra laek-plian wan nee tao rai?", "今天的汇率是多少？", ["A. 手续费是多少", "B. 今天的汇率是多少？", "C. 换多少人民币", "D. 最少换多少"], 1],
+                ["ต้องการแลกเงินหยวนเป็นเงินบาท", "Tong kan laek ngern yuan pen ngern baht", "我想把人民币换成泰铢", ["A. 泰铢换美金", "B. 我想把人民币换成泰铢", "C. 美金换泰铢", "D. 存入泰铢"], 1],
+                ["ตู้เอทีเอ็มอยู่ที่ไหนครับ", "Too ATM yoo tee nai krap?", "ATM自动取款机在哪？", ["A. 人工柜台在哪", "B. ATM自动取款机在哪？", "C. 保险柜在哪", "D. 刷卡机坏了吗"], 1],
+                ["มีค่าธรรมเนียมไหมครับ", "Mee kha tham-niam mai krap?", "有手续费吗？", ["A. 需要护照吗", "B. 有手续费吗？", "C. 能给大面额吗", "D. 几点到账"], 1]
+            ]
+        },
+        {
+            id: 17, title: "夸赞与情感表达",
+            list: [
+                ["สวยมากเลยครับ", "Suay mak loey krap", "太漂亮了 / 太好看了", ["A. 太贵了", "B. 太漂亮了 / 太好看了", "C. 太好笑了", "D. 太无聊了"], 1],
+                ["อร่อยมากๆ ครับ", "Aroi mak mak krap", "非常美味 / 太好吃了", ["A. 太辣了", "B. 太甜了", "C. 非常美味 / 太好吃了", "D. 吃饱了"], 2],
+                ["คุณใจดีจังเลยครับ", "Khun jai dee jang loey krap", "你心肠真好 / 太善良了", ["A. 你很聪明", "B. 你心肠真好 / 太善良了", "C. 你真幽默", "D. 你很准时"], 1],
+                ["ผมชอบประเทศไทยมาก", "Pom chop pra-thet thai mak", "我非常喜欢泰国", ["A. 第一次来泰国", "B. 我非常喜欢泰国", "C. 我想回国了", "D. 泰国好热"], 1],
+                ["สนุกมากๆ มีความสุขจัง", "Sa-nuk mak mak, mee khwam suk jang", "太好玩了，真开心", ["A. 累了想睡", "B. 太好玩了，真开心", "C. 挺无聊的", "D. 赶紧走吧"], 1]
+            ]
+        },
+        {
+            id: 18, title: "道别与旅行祝福",
+            list: [
+                ["ขอให้โชคดีนะครับ", "Khor hai chok dee na krap", "祝你好运！", ["A. 一路平安", "B. 祝你好运！", "C. 身体健康", "D. 步步高升"], 1],
+                ["เดินทางปลอดภัยนะครับ", "Dern thang plot phai na krap", "祝旅途平安 / 一路顺风", ["A. 祝旅途平安 / 一路顺风", "B. 欢迎光临", "C. 早点休息", "D. 生日快乐"], 0],
+                ["หวังว่าจะได้พบกันอีก", "Wang wa ja dai pob gan eek", "希望还能再见到你", ["A. 别再找我了", "B. 希望还能再见到你", "C. 记得发微信", "D. 保持联络"], 1],
+                ["ดูแลตัวเองดีๆ นะครับ", "Doo lae tua eng dee dee na krap", "好好照顾自己哦", ["A. 别着凉了", "B. 好好照顾自己哦", "C. 早点回家", "D. 辛苦了"], 1],
+                ["ขอบคุณสำหรับทุกอย่างครับ", "Khop khun sam-rap thuk yang krap", "感谢所发生/给予的一切", ["A. 打扰了对不起", "B. 感谢所发生/给予的一切", "C. 祝新年好", "D. 没关系"], 1]
+            ]
+        }
+    ];
+
+    let currentLessonId = 1;
+    let selectedRecords = [];
+
+    function buildHomeGrid() {
+        const wrap = document.getElementById('lesson-cards-wrap');
+        if (!wrap) return;
+        wrap.innerHTML = '';
+        
+        fullCourseData.forEach(item => {
+            const isDone = safeStore.get('thai_v2_' + item.id) === 'passed';
+            const card = document.createElement('div');
+            card.className = 'lesson-card' + (isDone ? ' done' : '');
+            card.onclick = function() { launchLesson(item.id); };
+            card.innerHTML = `
+                <div class="l-tag">第 ${item.id} 讲</div>
+                <div class="l-title">${item.title}</div>
+                <div class="l-status">✔</div>
+            `;
+            wrap.appendChild(card);
+        });
+    }
+
+    function openHome() {
+        document.getElementById('home-view').style.display = 'block';
+        document.getElementById('quiz-view').style.display = 'none';
+        document.getElementById('nav-back-btn').style.display = 'none';
+        document.getElementById('title-text').innerText = "泰语口语听力特训";
+        document.getElementById('subtitle-text').innerText = "第一季 · 18 讲全场景通关";
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        buildHomeGrid();
+    }
+
+    function launchLesson(id) {
+        currentLessonId = id;
+        const lesson = fullCourseData.find(l => l.id === id);
+        
+        document.getElementById('home-view').style.display = 'none';
+        document.getElementById('quiz-view').style.display = 'block';
+        document.getElementById('nav-back-btn').style.display = 'block';
+        document.getElementById('title-text').innerText = `第 ${lesson.id} 讲`;
+        document.getElementById('subtitle-text').innerText = lesson.title;
+
+        document.getElementById('result-box').style.display = 'none';
+        document.getElementById('submit-quiz-btn').style.display = 'block';
+
+        buildQuizDom(lesson);
+        window.scrollTo(0, 0);
+    }
+
+    function buildQuizDom(lesson) {
+        const wrap = document.getElementById('quiz-questions-wrap');
+        wrap.innerHTML = '';
+        selectedRecords = new Array(lesson.list.length).fill(null);
+
+        lesson.list.forEach((data, qIdx) => {
+            const thai = data[0];
+            const pinyin = data[1];
+            const trans = data[2];
+            const options = data[3];
+
+            const card = document.createElement('div');
+            card.className = 'q-card';
+
+            let optsHtml = '';
+            options.forEach((optText, optIdx) => {
+                optsHtml += `<button class="opt-btn" id="btn-opt-${qIdx}-${optIdx}" onclick="pickOption(${qIdx}, ${optIdx})">${optText}</button>`;
+            });
+
+            card.innerHTML = `
+                <div class="q-bar">
+                    <span class="q-num">第 ${qIdx + 1} 题 (盲听原音)</span>
+                    <button class="play-btn" onclick="speakThai('${thai}')">▶</button>
+                </div>
+                <div class="options-list">${optsHtml}</div>
+                <div class="reveal-box" id="reveal-${qIdx}">
+                    <div><strong>泰文：</strong>${thai}</div>
+                    <div><strong>读音：</strong>${pinyin}</div>
+                    <div><strong>含义：</strong>${trans}</div>
+                </div>
+            `;
+            wrap.appendChild(card);
+        });
+    }
+
+    function speakThai(phrase) {
+        try {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const voice = new SpeechSynthesisUtterance(phrase);
+                voice.lang = 'th-TH';
+                voice.rate = 0.85;
+                window.speechSynthesis.speak(voice);
+            } else {
+                alert("当前环境不支持语音，请在 Safari 或 Chrome 浏览器中打开。");
+            }
+        } catch(e) {
+            alert("发音组件提示: " + e.message);
+        }
+    }
+
+    function pickOption(qIdx, optIdx) {
+        selectedRecords[qIdx] = optIdx;
+        for (let i = 0; i < 4; i++) {
+            const btn = document.getElementById(`btn-opt-${qIdx}-${i}`);
+            if (btn) btn.classList.remove('active');
+        }
+        const activeBtn = document.getElementById(`btn-opt-${qIdx}-${optIdx}`);
+        if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    function submitAssessment() {
+        if (selectedRecords.includes(null)) {
+            alert("请听完并回答全部 5 道题后再提交！");
+            return;
+        }
+
+        const lesson = fullCourseData.find(l => l.id === currentLessonId);
+        let correctCount = 0;
+        document.getElementById('submit-quiz-btn').style.display = 'none';
+
+        lesson.list.forEach((data, qIdx) => {
+            const rightIdx = data[4];
+            const myPick = selectedRecords[qIdx];
+
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`btn-opt-${qIdx}-${i}`);
+                if (!btn) continue;
+                btn.onclick = null;
+                if (i === rightIdx) {
+                    btn.classList.add('correct-ans');
+                } else if (i === myPick && myPick !== rightIdx) {
+                    btn.classList.add('wrong-ans');
+                }
+            }
+
+            if (myPick === rightIdx) correctCount++;
+            const revBox = document.getElementById(`reveal-${qIdx}`);
+            if (revBox) revBox.style.display = 'block';
+        });
+
+        const score = correctCount * 20;
+        document.getElementById('result-box').style.display = 'block';
+        document.getElementById('score-text').innerText = score;
+
+        const remark = document.getElementById('remark-text');
+        if (score === 100) remark.innerText = "全部正确！听力感知非常敏锐！";
+        else if (score >= 60) remark.innerText = "过关！建议查看解析加深印象。";
+        else remark.innerText = "多听几遍原音，再次挑战即可提高。";
+
+        if (score >= 60) {
+            safeStore.set('thai_v2_' + currentLessonId, 'passed');
+        }
+
+        const nextBtn = document.getElementById('next-stage-btn');
+        if (currentLessonId < 18) {
+            nextBtn.style.display = 'inline-block';
+            nextBtn.innerText = `进入第 ${currentLessonId + 1} 讲 ➔`;
+        } else {
+            nextBtn.style.display = 'none';
+            remark.innerText += " 🎉 已达成第 1 季全部结业！";
+        }
+    }
+
+    function advanceNextLesson() {
+        if (currentLessonId < 18) {
+            launchLesson(currentLessonId + 1);
+        }
+    }
+
+    // 双重保底自启
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', openHome);
+    } else {
+        openHome();
+    }
+</script>
+
+</body>
+</html>
