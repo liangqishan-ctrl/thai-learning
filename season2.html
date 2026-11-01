@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>泰语口语听力特训 - 第二季</title>
+    <style>
+        :root {
+            --primary: #0284c7; /* 第二季采用进阶海蓝色 */
+            --primary-hover: #0369a1;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --success: #10b981;
+            --error: #ef4444;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            min-height: 100vh;
+            background: var(--card-bg);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部季别切换导航条 */
+        .season-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 10px;
+        }
+        .season-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 8px;
+            color: var(--text-sub);
+            transition: all 0.2s;
+        }
+        .season-tab.active {
+            background: #ffffff;
+            color: var(--primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        header {
+            position: relative;
+            padding: 10px 0 16px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .header-btn {
+            position: absolute;
+            left: 0;
+            top: 8px;
+            background: #f1f5f9;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text-main);
+            cursor: pointer;
+            display: none;
+        }
+        h1 { font-size: 20px; color: var(--text-main); }
+        .subtitle { margin-top: 4px; font-size: 13px; color: var(--text-sub); }
+
+        /* 目录卡片 */
+        #home-view { display: block; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding-bottom: 24px;
+        }
+        .lesson-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: left;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .lesson-card:active { background: #f1f5f9; }
+        .lesson-card.done {
+            background: #f0f9ff;
+            border-color: #bae6fd;
+        }
+        .l-tag { font-size: 12px; font-weight: 600; color: var(--primary); margin-bottom: 4px; }
+        .l-title { font-size: 15px; font-weight: 700; color: var(--text-main); }
+        .l-status { position: absolute; right: 12px; top: 12px; font-size: 14px; display: none; color: var(--primary); }
+        .lesson-card.done .l-status { display: block; }
+
+        /* 答题区 */
+        #quiz-view { display: none; padding-bottom: 40px; }
+        .q-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .q-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .q-num { font-size: 14px; font-weight: 700; color: var(--text-sub); }
+        .play-btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(2, 132, 199, 0.25);
+        }
+        .play-btn:active { transform: scale(0.92); }
+        .options-list { display: flex; flex-direction: column; gap: 8px; }
+        .opt-btn {
+            width: 100%;
+            text-align: left;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            background: #ffffff;
+            font-size: 15px;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+        .opt-btn.active {
+            border-color: var(--primary);
+            background: #f0f9ff;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .opt-btn.correct-ans {
+            border-color: var(--success);
+            background: var(--success);
+            color: #fff !important;
+            font-weight: 600;
+        }
+        .opt-btn.wrong-ans {
+            border-color: var(--error);
+            background: var(--error);
+            color: #fff !important;
+        }
+
+        /* 展开解析 */
+        .reveal-box {
+            display: none;
+            margin-top: 14px;
+            padding: 12px;
+            background: #f8fafc;
+            border-left: 3px solid var(--primary);
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .primary-action-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.2);
+        }
+        .primary-action-btn:active { background: var(--primary-hover); }
+
+        /* 评分结果 */
+        #result-box {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f0f9ff;
+            border-radius: 14px;
+            border: 1px solid #bae6fd;
+            text-align: center;
+        }
+        .score-val { font-size: 38px; font-weight: 800; color: var(--primary); }
+        .score-desc { font-size: 14px; color: var(--text-sub); margin: 6px 0 16px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- 季别切换顶栏 -->
+    <div class="season-tabs">
+        <a href="index.html" class="season-tab">第一季 · 基础</a>
+        <a href="season2.html" class="season-tab active">第二季 · 进阶实战</a>
+    </div>
+
+    <header>
+        <button class="header-btn" id="nav-back-btn" onclick="openHome()">◀ 目录</button>
+        <h1 id="title-text">泰语口语听力特训</h1>
+        <p class="subtitle" id="subtitle-text">第二季 · 18 讲进阶生活实战</p>
+    </header>
+
+    <div id="home-view">
+        <div class="grid" id="lesson-cards-wrap"></div>
+    </div>
+
+    <div id="quiz-view">
+        <div id="quiz-questions-wrap"></div>
+        <button id="submit-quiz-btn" class="primary-action-btn" onclick="submitAssessment()">提交答案并评分</button>
+
+        <div id="result-box">
+            <div>本次听力得分</div>
+            <div class="score-val" id="score-text">0</div>
+            <div class="score-desc" id="remark-text"></div>
+            <button class="primary-action-btn" id="next-stage-btn" onclick="advanceNextLesson()">进入下一讲 ➔</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 错误容错提示
+    window.onerror = function(msg, url, line) {
+        alert("页面运行遇到异常: " + msg + " (行: " + line + ")");
+        return false;
+    };
+
+    // 安全本地存储封装（兼容手机端离线打开）
+    const memoryStore = {};
+    const safeStore = {
+        get: function(key) {
+            try {
+                return window.localStorage ? window.localStorage.getItem(key) : memoryStore[key];
+            } catch(e) {
+                return memoryStore[key] || null;
+            }
+        },
+        set: function(key, val) {
+            try {
+                if (window.localStorage) window.localStorage.setItem(key, val);
+            } catch(e) {
+                memoryStore[key] = val;
+            }
+        }
+    };
+
+    // 第二季核心题库：全18讲实战生活进阶场景（共90道）
+    const fullCourseDataSeason2 = [
+        {
+            id: 1, title: "租房与公寓寻找",
+            list: [
+                ["มีห้องว่างให้เช่าไหมครับ", "Mee hong wang hai chao mai krap?", "请问有空房出租吗？", ["A. 可以退房吗", "B. 请问有空房出租吗？", "C. 房租多少钱", "D. 押金付多少"], 1],
+                ["ค่าเช่าเดือนละเท่าไหร่ครับ", "Kha chao deuan la tao rai krap?", "每个月房租多少钱？", ["A. 每个月房租多少钱？", "B. 什么时候入住", "C. 有阳台吗", "D. 带家具吗"], 0],
+                ["ค่าน้ำค่าไฟคิดยังไงครับ", "Kha nam kha fai khit yang ngai krap?", "水电费是怎么算的？", ["A. 网费多少", "B. 停车费怎么收", "C. 水电费是怎么算的？", "D. 管理费包含吗"], 2],
+                ["เลี้ยงสัตว์เลี้ยงได้ไหมครับ", "Liang sat liang dai mai krap?", "这里可以养宠物吗？", ["A. 可以做饭吗", "B. 这里可以养宠物吗？", "C. 有健身房吗", "D. 隔音好不好"], 1],
+                ["มัดจำสัญญาเท่าไหร่ครับ", "Mat-jam san-ya tao rai krap?", "签合同押金需要付多少？", ["A. 租期多久", "B. 什么时候签合同", "C. 钥匙给几把", "D. 签合同押金需要付多少？"], 3]
+            ]
+        },
+        {
+            id: 2, title: "生鲜超市与菜市",
+            list: [
+                ["มะม่วงนี้กิโลละเท่าไหร่ครับ", "Ma-muang nee ki-lo la tao rai krap?", "这芒果一公斤多少钱？", ["A. 这芒果一公斤多少钱？", "B. 这芒果甜不甜", "C. 还有多少斤", "D. 能切开看看吗"], 0],
+                ["เนื้อหมูอันนี้สดไหมครับ", "Neua moo an nee sot mai krap?", "这份猪肉新鲜吗？", ["A. 牛肉怎么卖", "B. 这份猪肉新鲜吗？", "C. 帮我剁碎点", "D. 这是冷冻的吗"], 1],
+                ["ช่วยหั่นเป็นชิ้นเล็กๆ ให้หน่อย", "Chuay han pen chin lek lek hai noi", "请帮我切成小块", ["A. 帮我称一下", "B. 帮我洗一下", "C. 请帮我切成小块", "D. 多拿一个塑料袋"], 2],
+                ["ขอชิมดูหน่อยได้ไหมครับ", "Khor chim doo noi dai mai krap?", "请问可以试尝一下吗？", ["A. 请问可以试尝一下吗？", "B. 买两个可以便宜吗", "C. 保质期多久", "D. 产地是哪里"], 0],
+                ["ชั่งน้ำหนักผักที่ไหนครับ", "Chang nam-nak phak tee nai krap?", "蔬菜在哪里过磅称重？", ["A. 结账柜台在哪", "B. 购物车在哪取", "C. 塑料袋在哪里拿", "D. 蔬菜在哪里过磅称重？"], 3]
+            ]
+        },
+        {
+            id: 3, title: "传统节日与习俗",
+            list: [
+                ["สุขสันต์วันสงกรานต์ครับ", "Suk-san wan song-kran krap", "宋干节（泼水节）快乐！", ["A. 新年快乐", "B. 宋干节（泼水节）快乐！", "C. 水灯节快乐", "D. 祝你长寿"], 1],
+                ["วันลอยกระทงไปลอยที่ไหนดี", "Wan loy kra-thong pai loy tee nai dee?", "水灯节去哪里放水灯好？", ["A. 水灯节去哪里放水灯好？", "B. 水灯多少钱一个", "C. 什么时候天黑", "D. 节日放假几天"], 0],
+                ["เล่นน้ำระวังตัวด้วยนะครับ", "Len nam ra-wang tua duay na krap", "玩水的时候注意安全哦", ["A. 别把手机打湿了", "B. 水枪装满水了吗", "C. 玩水的时候注意安全哦", "D. 记得涂防晒霜"], 2],
+                ["วันนี้เป็นวันวิสาขบูชาครับ", "Wan nee pen wan wi-sa-kha bu-cha krap", "今天是卫塞节（佛诞日）", ["A. 今天是卫塞节（佛诞日）", "B. 今天寺庙关门", "C. 今天禁止饮酒", "D. 今天不上班"], 0],
+                ["ขอให้มีความสุขสุขภาพแข็งแรง", "Khor hai mee khwam-suk suk-kha-phap khaeng-raeng", "祝你幸福安康、身体健康", ["A. 祝你财源广进", "B. 祝你一路顺风", "C. 祝工作顺利", "D. 祝你幸福安康、身体健康"], 3]
+            ]
+        },
+        {
+            id: 4, title: "理发美发与造型",
+            list: [
+                ["อยากตัดผม เอาออกนิดหน่อย", "Yak tat phom, ao ok nit noi", "想理发，稍微剪短一点点", ["A. 想换个新发型", "B. 想理发，稍微剪短一点点", "C. 想把头发全部剃光", "D. 想做个造型"], 1],
+                ["ตัดหน้าม้าและเล็มข้างๆ ครับ", "Tat na-ma laew lem khang khang krap", "剪个刘海，两边稍微修剪", ["A. 剪个刘海，两边稍微修剪", "B. 后面剪短点", "C. 头顶打薄一点", "D. 刮一下胡子"], 0],
+                ["อยากย้อมผมเป็นสีนี้ครับ", "Yak yom phom pen see nee krap", "头发想染成这个颜色", ["A. 烫卷发多少钱", "B. 护发素怎么用", "C. 头发想染成这个颜色", "D. 什么时候洗头"], 2],
+                ["น้ำอุ่นกำลังดีไหมครับ", "Nam oon kam-lang dee mai krap?", "水温合适吗？（理发师询问）", ["A. 躺着舒服吗", "B. 水温合适吗？", "C. 力度可以吗", "D. 要洗两遍吗"], 1],
+                ["เป่าแห้งอย่างเดียวก็พอครับ", "Pao haeng yang diao kor phor krap", "只要吹干就行了，不用定型", ["A. 只要吹干就行了，不用定型", "B. 抹点发蜡发胶", "C. 帮我再喷点水", "D. 吹出卷发效果"], 0]
+            ]
+        },
+        {
+            id: 5, title: "健身房与运动锻炼",
+            list: [
+                ["ฟิตเนสเปิดกี่โมงครับ", "Fitness poet gee mong krap?", "健身房几点开门？", ["A. 健身房几点开门？", "B. 年卡多少钱", "C. 浴室在哪里", "D. 有免费饮用水吗"], 0],
+                ["อยากได้เทรนเนอร์ส่วนตัว", "Yak dai trainer suan tua krap", "我想请一位私人教练", ["A. 想租一个储物柜", "B. 跑步机怎么使用", "C. 我想请一位私人教练", "D. 更衣室密码是多少"], 2],
+                ["วิ่งวันละครึ่งชั่วโมงครับ", "Wing wan la kreung chua-mong krap", "每天坚持跑步半小时", ["A. 游一个小时泳", "B. 每天坚持跑步半小时", "C. 做100个俯卧撑", "D. 练腿部力量"], 1],
+                ["ออกกำลังกายเสร็จดื่มน้ำเยอะๆ", "Ok kam-lang gai set deum nam yer yer", "运动完记得多喝点水", ["A. 运动完记得多喝点水", "B. 运动完别马上洗澡", "C. 运动完做下拉伸", "D. 准备开始热身了"], 0],
+                ["สระว่ายน้ำลึกกี่เมตรครับ", "Sa wai-nam leuk gee met krap?", "游泳池的水深是多少米？", ["A. 泳池水质干净吗", "B. 几点需要清场", "C. 可以穿鞋进去吗", "D. 游泳池的水深是多少米？"], 3]
+            ]
+        },
+        {
+            id: 6, title: "宠物生活与护理",
+            list: [
+                ["แมวดูเหมือนจะไม่สบายครับ", "Maew doo meuan ja mai sa-bai krap", "小猫看起来好像生病了", ["A. 猫咪肚子饿了", "B. 小猫看起来好像生病了", "C. 小猫该剪指甲了", "D. 帮猫梳毛"], 1],
+                ["สุนัขต้องฉีดวัคซีนไหมครับ", "Su-nak tong cheet vaccine mai krap?", "小狗需要打疫苗吗？", ["A. 小狗需要打疫苗吗？", "B. 小狗该吃驱虫药吗", "C. 几天洗一次澡", "D. 办理狗证怎么走"], 0],
+                ["มีอาหารแมวขายไหมครับ", "Mee a-han maew khai mai krap?", "请问有猫粮卖吗？", ["A. 有宠物玩具吗", "B. 猫砂多少钱一包", "C. 请问有猫粮卖吗？", "D. 狗粮还有存货吗"], 2],
+                ["อาบน้ำและตัดเล็บให้หมาครับ", "Ap nam laew tat lep hai ma krap", "帮狗狗洗澡并剪指甲", ["A. 帮狗狗修毛打结", "B. 帮狗狗洗澡并剪指甲", "C. 给小狗洗耳朵", "D. 寄养小狗三天"], 1],
+                ["หมาตัวนี้ใจดี ไม่กัดครับ", "Ma tua nee jai dee, mai kat krap", "这只狗很温顺，不咬人的", ["A. 这只狗很温顺，不咬人的", "B. 别靠近，小狗会叫", "C. 它有点认生", "D. 狗狗喜欢吃肉"], 0]
+            ]
+        },
+        {
+            id: 7, title: "邮政寄送与快递",
+            list: [
+                ["ผมอยากส่งพัสดุไปจีนครับ", "Pom yak song phat-sa-du pai jeen krap", "我想寄个包裹回中国", ["A. 我想寄信到清迈", "B. 我想寄个包裹回中国", "C. 快递费多少钱一公斤", "D. 能寄海运吗"], 1],
+                ["ประมาณกี่วันถึงครับ", "Pra-man gee wan theung krap?", "大约需要几天能送达？", ["A. 大约需要几天能送达？", "B. 周末派送吗", "C. 可以上门取件吗", "D. 会有破损吗"], 0],
+                ["เขียนที่อยู่ผู้รับบนกล่องนะครับ", "Khian tee yoo phoo rap bon klong na krap", "请把收件人地址写在箱子上", ["A. 贴上寄件人电话", "B. 用胶带封好箱子", "C. 请把收件人地址写在箱子上", "D. 填一下报关单"], 2],
+                ["มีเลขพัสดุไหมครับ", "Mee lek phat-sa-du mai krap?", "有物流单号/快递单号吗？", ["A. 有物流单号/快递单号吗？", "B. 运费付过了吗", "C. 需要保价吗", "D. 有发票凭条吗"], 0],
+                ["พัสดุหนักสองกิโลกรัมครับ", "Phat-sa-du nak song ki-lo-kram krap", "包裹重量一共是两公斤", ["A. 超重需要加费", "B. 箱子尺寸太大了", "C. 里面装的是衣服", "D. 包裹重量一共是两公斤"], 3]
+            ]
+        },
+        {
+            id: 8, title: "修车保养与故障",
+            list: [
+                ["ยางรถยนต์รั่วครับ", "Yang rot-yon rua krap", "汽车轮胎被扎漏气了", ["A. 换一下备胎", "B. 汽车轮胎被扎漏气了", "C. 胎压好像有点低", "D. 车轮响动声很大"], 1],
+                ["เบรกดูเหมือนมีปัญหาครับ", "Brake doo meuan mee pan-ha krap", "刹车系统好像有点问题", ["A. 刹车系统好像有点问题", "B. 方向盘有点偏", "C. 车灯坏了一个", "D. 雨刷器刮不干净"], 0],
+                ["เปลี่ยนน้ำมันเครื่องเท่าไหร่", "Plian nam-man khreuang tao rai krap?", "更换机油需要多少钱？", ["A. 加玻璃水多少钱", "B. 换电瓶需要多少钱", "C. 更换机油需要多少钱？", "D. 洗车打蜡多少钱"], 2],
+                ["สตาร์ทรถไม่ติดครับ", "Start rot mai tit krap", "汽车打不着火/发动不了", ["A. 车钥匙拧不动", "B. 汽车打不着火/发动不了", "C. 油箱好像空了", "D. 水箱温度过高"], 1],
+                ["ซ่อมประมาณนานแค่ไหนครับ", "Som pra-man nan khae nai krap?", "大概需要修多长时间？", ["A. 大概需要修多长时间？", "B. 配件什么时候能到", "C. 能够当场修好吗", "D. 修好会打电话吗"], 0]
+            ]
+        },
+        {
+            id: 9, title: "影院观影与娱乐",
+            list: [
+                ["ตั๋วหนังรอบทุ่มนึงสองใบครับ", "Tua nang rop thum neung song bai krap", "买两张晚上七点的电影票", ["A. 买一张下午三点的票", "B. 买两张晚上七点的电影票", "C. 电影已经开场了", "D. 还有退票吗"], 1],
+                ["หนังมีซับไตเติลภาษาอังกฤษไหม", "Nang mee subtitle pa-sa ang-krit mai?", "电影有英文字幕吗？", ["A. 电影有英文字幕吗？", "B. 电影是泰语原声吗", "C. 是3D电影吗", "D. 片长有多少分钟"], 0],
+                ["เอาป๊อปคอร์นถังใหญ่กับโคล่า", "Ao popcorn thang yai kap cola krap", "要一桶大份爆米花和可乐", ["A. 要热狗和奶茶", "B. 要两杯无糖冰水", "C. 要一桶大份爆米花和可乐", "D. 爆米花要甜味的"], 2],
+                ["ขอที่นั่งแถวตรงกลางครับ", "Khor tee nang thaew trong klang krap", "请帮我选中间一排的座位", ["A. 最后一排角落位置", "B. 请帮我选中间一排的座位", "C. 最前排靠近银幕", "D. 两个靠过道的座位"], 1],
+                ["หนังยาวประมาณสองชั่วโมงครับ", "Nang yao pra-man song chua-mong krap", "电影时长大约两小时", ["A. 还有十分钟散场", "B. 中途有休息时间", "C. 准时七点开始放映", "D. 电影时长大约两小时"], 3]
+            ]
+        },
+        {
+            id: 10, title: "海岛度假与游船",
+            list: [
+                ["วันนี้คลื่นแรง เล่นน้ำไม่ได้", "Wan nee khluen raeng, len nam mai dai", "今天风浪太大，不能下海", ["A. 今天天气晴朗适合游泳", "B. 今天风浪太大，不能下海", "C. 退潮了去赶海吧", "D. 水母较多注意安全"], 1],
+                ["เช่าร่มกับเตียงผ้าใบเท่าไหร่", "Chao rom kap tiang pha-bai tao rai krap?", "租遮阳伞和沙滩躺椅多少钱？", ["A. 租遮阳伞和沙滩躺椅多少钱？", "B. 冲洗换衣一次多少钱", "C. 租摩托艇半小时多少钱", "D. 租游泳圈多少钱"], 0],
+                ["อยากจองทัวร์ดำน้ำวันพรุ่งนี้", "Yak jong tour dam-nam wan phrung nee", "想预订明天的浮潜出海一日游", ["A. 租深潜装备一套", "B. 参加夜钓鱿鱼团", "C. 想预订明天的浮潜出海一日游", "D. 几点集合出发"], 2],
+                ["กรุณาใส่เสื้อชูชีพด้วยครับ", "Ka-ru-na sai seua chu-cheep duay krap", "上船请务必穿好救生衣", ["A. 上船请务必穿好救生衣", "B. 请保管好贵重物品", "C. 容易晕船请坐后排", "D. 赤脚上快艇"], 0],
+                ["พระอาทิตย์ตกที่นี่สวยมากครับ", "Phra-a-thit tok tee nee suay mak krap", "这里的海上日落景色太美了", ["A. 明天早起看日出", "B. 天边晚霞好红", "C. 海水非常清澈碧蓝", "D. 这里的海上日落景色太美了"], 3]
+            ]
+        },
+        {
+            id: 11, title: "泰拳观赛与练习",
+            list: [
+                ["มวยไทยคืนนี้เริ่มกี่โมงครับ", "Muay thai kheun nee roem gee mong krap?", "今晚的泰拳比赛几点开赛？", ["A. 今晚的泰拳比赛几点开赛？", "B. 门票还有剩余吗", "C. 一共打多少个回合", "D. VIP座位在哪个区"], 0],
+                ["อยากสมัครเรียนมวยไทยพื้นฐาน", "Yak sa-mak rian muay thai pheun-than", "我想报名初学者泰拳体验课", ["A. 想观摩公开训练课", "B. 我想报名初学者泰拳体验课", "C. 课程包含私教指导吗", "D. 上课需要自己带护具吗"], 1],
+                ["ก่อนซ้อมมวยต้องวอร์มร่างกาย", "Gon som muay tong warm rang-kai gon", "练习泰拳前一定要充分热身", ["A. 练完泰拳要喝椰子水", "B. 戴上手套做好防守", "C. 练习泰拳前一定要充分热身", "D. 跑步五公里热身"], 2],
+                ["นวมและผ้าพันมือซื้อที่ไหน", "Nuam laew pha phan meu seu tee nai?", "拳击手套和绑手绷带在哪里买？", ["A. 拳击手套和绑手绷带在哪里买？", "B. 泰拳短裤多少钱一条", "C. 场馆提供免费租借吗", "D. 护齿需要定制吗"], 0],
+                ["หมัดนี้ทรงพลังมากครับ", "Mat nee song pha-lang mak krap", "这一拳击打得非常有力量！", ["A. 这一记扫踢非常利落", "B. 膝击动作非常标准", "C. 红方选手倒地读秒了", "D. 这一拳击打得非常有力量！"], 3]
+            ]
+        },
+        {
+            id: 12, title: "特色甜品与水果",
+            list: [
+                ["เอามะม่วงข้าวเหนียว เพิ่มกะทิ", "Ao ma-muang khao-niao, perm ka-ti", "要一份芒果糯米饭，多淋椰浆", ["A. 要一份榴莲糯米饭", "B. 要一份芒果糯米饭，多淋椰浆", "C. 糯米饭少放糖", "D. 芒果切大块一点"], 1],
+                ["ทุเรียนลูกนี้สุกหรือยัง หวานไหม", "Thu-rian look nee suk reu yang, wan mai?", "这个榴莲熟了吗？甜不甜？", ["A. 这个榴莲熟了吗？甜不甜？", "B. 这个榴莲肉厚不厚", "C. 称一下整个有多重", "D. 剥开帮我装在盒子里"], 0],
+                ["ขอบัวลอยน้ำขิงร้อนๆ หนึ่งถ้วย", "Khor bua-loy nam-khing ron ron neung thuay", "来一碗热气腾腾的姜汁汤圆", ["A. 来一碗冰镇椰奶马蹄糕", "B. 来一份泰式千层糕", "C. 来一碗热气腾腾的姜汁汤圆", "D. 姜汁少放一点"], 2],
+                ["ชาไทยหวานน้อยน้ำแข็งน้อยครับ", "Cha thai wan noi nam-khaeng noi krap", "泰式奶茶少糖微冰", ["A. 绿奶茶不加糖", "B. 泰式奶茶少糖微冰", "C. 柠檬红茶多加冰", "D. 奶茶换成燕麦奶"], 1],
+                ["ไอศกรีมกะทิโรยถั่วลิสงครับ", "Ice cream ka-ti roy thua-li-song krap", "椰子冰淇淋上面撒点炒花生", ["A. 椰子冰淇淋上面撒点炒花生", "B. 冰淇淋加一份糯米底", "C. 挖三个球装在椰子壳里", "D. 加点玉米粒和红豆"], 0]
+            ]
+        },
+        {
+            id: 13, title: "职场沟通与面试",
+            list: [
+                ["กรุณาแนะนำตัวสั้นๆ หน่อยครับ", "Ka-ru-na nae-nam tua san san noi krap", "请您做个简短的自我介绍", ["A. 请您做个简短的自我介绍", "B. 谈谈你之前的工作", "C. 你期望的薪资是多少", "D. 为什么选择我们公司"], 0],
+                ["ผมมีประสบการณ์ทำงานสามปี", "Pom mee pra-sop-kan tham-ngan sam pee", "我有三年的相关岗位工作经验", ["A. 我上个月刚大学毕业", "B. 我有三年的相关岗位工作经验", "C. 我精通三种外语", "D. 我可以随时入职"], 1],
+                ["ประชุมแผนกบ่ายสองโมงวันนี้", "Pra-chum pha-naek bai song mong wan nee", "今天下午两点召开部门例会", ["A. 明天上午提交项目方案", "B. 会议室投影仪坏了", "C. 今天下午两点召开部门例会", "D. 客户临时取消会面"], 2],
+                ["ช่วยพิมพ์เอกสารชุดนี้ให้หน่อย", "Chuay phim ek-ka-san chut nee hai noi", "请帮我打印一下这份文件", ["A. 请帮我打印一下这份文件", "B. 把合同扫描发邮件", "C. 在最后一页签名盖章", "D. 帮我碎掉这些草稿纸"], 0],
+                ["ยินดีที่ได้ร่วมงาน ขอให้ราบรื่น", "Yin dee tee dai ruam ngan, khor hai rap-reun", "合作愉快，预祝项目一切顺利！", ["A. 欢迎加入我们的团队", "B. 辛苦大家这周加班", "C. 感谢领导的认可指导", "D. 合作愉快，预祝项目一切顺利！"], 3]
+            ]
+        },
+        {
+            id: 14, title: "网络购物与退换",
+            list: [
+                ["ได้รับของแล้วแต่ขนาดผิดครับ", "Dai rap khong laew tae kha-nat phit krap", "收到衣服了，但是尺码发错了", ["A. 快递包装箱压坏了", "B. 收到衣服了，但是尺码发错了", "C. 衣服颜色跟图片不符", "D. 衣服好像少发了一件"], 1],
+                ["ขอเงินคืนต้องทำยังไงครับ", "Khor ngern kheun tong tham yang ngai?", "申请退款该怎么操作呢？", ["A. 申请退款该怎么操作呢？", "B. 退货运费是谁承担", "C. 货款几天能退回账户", "D. 怎么修改收货地址"], 0],
+                ["เปลี่ยนเป็นไซส์ใหญ่ขึ้นได้ไหม", "Plian pen size yai kheun dai mai?", "可以帮我调换成大一号的吗？", ["A. 能换成黑色款吗", "B. 有没有更厚一点的面料", "C. 可以帮我调换成大一号的吗？", "D. 可以补差价升级吗"], 2],
+                ["พนักงานส่งของจะโทรก่อนส่ง", "Pha-nak-ngan song khong ja tho gon song", "快递员派件前通常会提前电联", ["A. 快递员派件前通常会提前电联", "B. 快递放门卫室可以吗", "C. 请凭取件码到驿站拿货", "D. 送达后请检查并签收"], 0],
+                ["จัดส่งสินค้าใหม่ให้เรียบร้อยแล้ว", "Jat song sin-kha mai hai riap-roy laew", "已为您重新安排换货发出了", ["A. 您的退款申请已通过", "B. 仓库正在加紧备货", "C. 旧件退回后才能补发", "D. 已为您重新安排换货发出了"], 3]
+            ]
+        },
+        {
+            id: 15, title: "签证办理与移民局",
+            list: [
+                ["ผมอยากต่อวีซ่าท่องเที่ยวครับ", "Pom yak tor visa thong-thiao krap", "我想办理旅游签证续签手续", ["A. 我想办学生签转工作签", "B. 我想办理旅游签证续签手续", "C. 逾期滞留罚款多少", "D. 90天报到窗口在哪里"], 1],
+                ["ต้องเตรียมเอกสารอะไรบ้างครับ", "Tong triam ek-ka-san arai bang krap?", "需要准备哪些申请材料呢？", ["A. 需要准备哪些申请材料呢？", "B. 续签申请表去哪领", "C. 照片底色要求白底吗", "D. 租房合同要房东签名吗"], 0],
+                ["ขอดูหนังสือเดินทางตัวจริงหน่อย", "Khor doo nang-seu dern-thang tua jing noi", "请出示您的护照原件核对", ["A. 护照复印件带了吗", "B. 出境卡TM6还留着吗", "C. 请出示您的护照原件核对", "D. 在表格下方签中文名"], 2],
+                ["ค่าธรรมเนียมต่อวีซ่าเท่าไหร่", "Kha tham-niam tor visa tao rai krap?", "续签的官方规费是多少钱？", ["A. 拍照复印要多少钱", "B. 续签的官方规费是多少钱？", "C. 加急办理要加收多少", "D. 可以直接扫码付吗"], 1],
+                ["มารับพาสปอร์ตสัปดาห์หน้านะครับ", "Ma rap passport sap-da na na krap", "请下周凭回执单来取护照", ["A. 请下周凭回执单来取护照", "B. 明天下午来盖章", "C. 审核通过会发短信通知", "D. 请到三号窗口排队等待"], 0]
+            ]
+        },
+        {
+            id: 16, title: "租车自驾与路况",
+            list: [
+                ["ที่ไทยขับรถชิดเลนซ้ายนะครับ", "Tee thai khap rot chit lane sai na krap", "泰国开车是左侧行驶的哦", ["A. 泰国开车是左侧行驶的哦", "B. 红灯时通常不能左转", "C. 斑马线必须礼让行人", "D. 全程必须开启行车记录仪"], 0],
+                ["คาดเข็มขัดนิรภัยและห้ามเล่นมือถือ", "Khat khem-khat ni-ra-phai laew ham len meu-theu", "请系好安全带，严禁玩手机", ["A. 骑车严禁后座带人", "B. 请系好安全带，严禁玩手机", "C. 高速公路禁止鸣笛", "D. 弯道超车非常危险"], 1],
+                ["ข้างหน้ามีไฟแดง ชะลอความเร็ว", "Khang na mee fai daeng, cha-lor khwam-reo", "前面有红绿灯，注意减速慢行", ["A. 前面正在修路请绕行", "B. 前方事故发生拥堵", "C. 前面有红绿灯，注意减速慢行", "D. 马上到收费站了提前减速"], 2],
+                ["ปั๊มน้ำมันใกล้ๆ อยู่ตรงไหนครับ", "Pam nam-man klai klai yoo trong nai?", "最近的加油站大概在什么位置？", ["A. 最近的加油站大概在什么位置？", "B. 这个服务区有洗手间吗", "C. 哪里可以给轮胎充气", "D. 充电桩支持快充吗"], 0],
+                ["ค่าทางด่วนราคาเท่าไหร่ครับ", "Kha thang-duan ra-ka tao rai krap?", "这段高速公路过路费是多少？", ["A. 支持ETC电子感应吗", "B. 出口指示牌看清了吗", "C. 下一个出口通往芭提雅", "D. 这段高速公路过路费是多少？"], 3]
+            ]
+        },
+        {
+            id: 17, title: "邻里走动与派对",
+            list: [
+                ["ดีใจที่ได้เป็นเพื่อนบ้านกัน", "Dee jai tee dai pen pheuan ban gan krap", "很高兴能和你成为邻居！", ["A. 欢迎来到我们小区搬家", "B. 很高兴能和你成为邻居！", "C. 我们住在对门几号房", "D. 以后多串门喝茶"], 1],
+                ["สุดสัปดาห์มาทานบาร์บีคิวที่บ้านผม", "Sut sap-da ma than barbecue tee ban pom", "周末来我家一起吃烤肉派对吧", ["A. 周末来我家一起吃烤肉派对吧", "B. 周末一起去夜市吃海鲜", "C. 明天有空一起去逛街吗", "D. 庆祝朋友乔迁新居"], 0],
+                ["ผมทำอาหารบ้านเกิด ลองชิมดูนะ", "Pom tham a-han ban-koet, long chim doo", "我做了我家乡的特色菜，尝尝看", ["A. 这是刚买的水果拼盘", "B. 尝尝这道泰国冬阴功汤", "C. 我做了我家乡的特色菜，尝尝看", "D. 菜有点辣不知道你习不习惯"], 2],
+                ["มีอะไรให้ช่วยบอกได้ตลอดเลย", "Mee arai hai chuay bok dai ta-lot loey", "如果有什么需要帮忙的随时开口", ["A. 如果有什么需要帮忙的随时开口", "B. 借用工具记得归还", "C. 晚上请尽量保持安静", "D. 出门记得反锁房门"], 0],
+                ["ขอบคุณสำหรับการต้อนรับที่อบอุ่น", "Khop khun sam-rap kan ton-rap tee op-oon", "非常感谢你们热情周到的款待！", ["A. 饭菜太香了吃得很饱", "B. 改天一定来我家做客", "C. 礼物很喜欢太客气了", "D. 非常感谢你们热情周到的款待！"], 3]
+            ]
+        },
+        {
+            id: 18, title: "深度常住与感悟",
+            list: [
+                ["ผมอยู่ที่กรุงเทพฯ มาหนึ่งปีแล้ว", "Pom yoo tee Krungthep ma neung pee laew", "我已经在曼谷生活住满一年了", ["A. 我打算下个月搬去清迈", "B. 我已经在曼谷生活住满一年了", "C. 这里的气候我非常适应", "D. 第一次来泰国旅行度假"], 1],
+                ["คนไทยใจดีและเป็นมิตรมากครับ", "Khon thai jai dee laew pen mit mak krap", "泰国人真的很善良友善且热情", ["A. 泰国人真的很善良友善且热情", "B. 泰国到处都是微笑的面孔", "C. 本地人生活节奏非常悠闲", "D. 感觉曼谷生活便利物价友好"], 0],
+                ["การคุยทุกวันทำให้ผมพัฒนาเร็ว", "Kan khui thuk wan tham hai pom phat-tha-na reo", "每天开口交流让我的泰语进步极快", ["A. 每天坚持看泰剧学俚语", "B. 泰语字母声调其实很有趣", "C. 每天开口交流让我的泰语进步极快", "D. 听力比以前敏锐了许多"], 2],
+                ["ชีวิตที่ไม่เร่งรีบเหมาะกับผมมาก", "Chee-wit tee mai reng-reep mor kap pom mak", "这里悠闲不紧绷的生活节奏很适合我", ["A. 这里悠闲不紧绷的生活节奏很适合我", "B. 偶尔去海岛度个假换换心情", "C. 习惯了每天一杯泰式冰咖啡", "D. 喜欢曼谷繁华多元的夜生活"], 0],
+                ["แค่ฝึกฝนเรื่อยๆ การฟังก็จะดีขึ้น", "Khae feuk-fon reuay reuay, kan fang kor ja dee kheun", "只要坚持盲听，泰语口语听力就会越来越棒！", ["A. 感谢你完成了所有的听力挑战！", "B. 从零开始学泰语其实并不难", "C. 坚持每天练习五分钟效果显著", "D. 只要坚持盲听，泰语口语听力就会越来越棒！"], 3]
+            ]
+        }
+    ];
+
+    let currentLessonId = 1;
+    let selectedRecords = [];
+
+    // 初始化目录网格
+    function buildHomeGrid() {
+        const wrap = document.getElementById('lesson-cards-wrap');
+        if (!wrap) return;
+        wrap.innerHTML = '';
+        
+        fullCourseDataSeason2.forEach(item => {
+            const isDone = safeStore.get('thai_s2_' + item.id) === 'passed';
+            const card = document.createElement('div');
+            card.className = 'lesson-card' + (isDone ? ' done' : '');
+            card.onclick = function() { launchLesson(item.id); };
+            card.innerHTML = `
+                <div class="l-tag">第 ${item.id} 讲</div>
+                <div class="l-title">${item.title}</div>
+                <div class="l-status">✔</div>
+            `;
+            wrap.appendChild(card);
+        });
+    }
+
+    // 打开主页
+    function openHome() {
+        document.getElementById('home-view').style.display = 'block';
+        document.getElementById('quiz-view').style.display = 'none';
+        document.getElementById('nav-back-btn').style.display = 'none';
+        document.getElementById('title-text').innerText = "泰语口语听力特训";
+        document.getElementById('subtitle-text').innerText = "第二季 · 18 讲进阶生活实战";
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        buildHomeGrid();
+    }
+
+    // 启动某一讲
+    function launchLesson(id) {
+        currentLessonId = id;
+        const lesson = fullCourseDataSeason2.find(l => l.id === id);
+        
+        document.getElementById('home-view').style.display = 'none';
+        document.getElementById('quiz-view').style.display = 'block';
+        document.getElementById('nav-back-btn').style.display = 'block';
+        document.getElementById('title-text').innerText = `第二季 · 第 ${lesson.id} 讲`;
+        document.getElementById('subtitle-text').innerText = lesson.title;
+
+        document.getElementById('result-box').style.display = 'none';
+        document.getElementById('submit-quiz-btn').style.display = 'block';
+
+        buildQuizDom(lesson);
+        window.scrollTo(0, 0);
+    }
+
+    // 构建题目
+    function buildQuizDom(lesson) {
+        const wrap = document.getElementById('quiz-questions-wrap');
+        wrap.innerHTML = '';
+        selectedRecords = new Array(lesson.list.length).fill(null);
+
+        lesson.list.forEach((data, qIdx) => {
+            const thai = data[0];
+            const pinyin = data[1];
+            const trans = data[2];
+            const options = data[3];
+
+            const card = document.createElement('div');
+            card.className = 'q-card';
+
+            let optsHtml = '';
+            options.forEach((optText, optIdx) => {
+                optsHtml += `<button class="opt-btn" id="btn-opt-${qIdx}-${optIdx}" onclick="pickOption(${qIdx}, ${optIdx})">${optText}</button>`;
+            });
+
+            card.innerHTML = `
+                <div class="q-bar">
+                    <span class="q-num">第 ${qIdx + 1} 题 (进阶原音盲听)</span>
+                    <button class="play-btn" onclick="speakThai('${thai}')">▶</button>
+                </div>
+                <div class="options-list">${optsHtml}</div>
+                <div class="reveal-box" id="reveal-${qIdx}">
+                    <div><strong>泰文：</strong>${thai}</div>
+                    <div><strong>读音：</strong>${pinyin}</div>
+                    <div><strong>含义：</strong>${trans}</div>
+                </div>
+            `;
+            wrap.appendChild(card);
+        });
+    }
+
+    // 泰语语音播报 (TTS)
+    function speakThai(phrase) {
+        try {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const voice = new SpeechSynthesisUtterance(phrase);
+                voice.lang = 'th-TH';
+                voice.rate = 0.85; // 保持清晰好听的进阶语速
+                window.speechSynthesis.speak(voice);
+            } else {
+                alert("当前环境不支持系统语音，请在 Safari 或 Chrome 浏览器中打开。");
+            }
+        } catch(e) {
+            alert("发音提示: " + e.message);
+        }
+    }
+
+    // 选中选项
+    function pickOption(qIdx, optIdx) {
+        selectedRecords[qIdx] = optIdx;
+        for (let i = 0; i < 4; i++) {
+            const btn = document.getElementById(`btn-opt-${qIdx}-${i}`);
+            if (btn) btn.classList.remove('active');
+        }
+        const activeBtn = document.getElementById(`btn-opt-${qIdx}-${optIdx}`);
+        if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    // 提交并评分
+    function submitAssessment() {
+        if (selectedRecords.includes(null)) {
+            alert("请听完并回答全部 5 道题后再提交！");
+            return;
+        }
+
+        const lesson = fullCourseDataSeason2.find(l => l.id === currentLessonId);
+        let correctCount = 0;
+        document.getElementById('submit-quiz-btn').style.display = 'none';
+
+        lesson.list.forEach((data, qIdx) => {
+            const rightIdx = data[4];
+            const myPick = selectedRecords[qIdx];
+
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`btn-opt-${qIdx}-${i}`);
+                if (!btn) continue;
+                btn.onclick = null;
+                if (i === rightIdx) {
+                    btn.classList.add('correct-ans');
+                } else if (i === myPick && myPick !== rightIdx) {
+                    btn.classList.add('wrong-ans');
+                }
+            }
+
+            if (myPick === rightIdx) correctCount++;
+            const revBox = document.getElementById(`reveal-${qIdx}`);
+            if (revBox) revBox.style.display = 'block';
+        });
+
+        const score = correctCount * 20;
+        document.getElementById('result-box').style.display = 'block';
+        document.getElementById('score-text').innerText = score;
+
+        const remark = document.getElementById('remark-text');
+        if (score === 100) remark.innerText = "第二季满分通关！对进阶场景词汇掌握极佳！🎉";
+        else if (score >= 60) remark.innerText = "挑战合格！对照下方原文多听两遍，加深语感记忆。";
+        else remark.innerText = "生词略多，不妨多点几遍原音盲听，熟能生巧！";
+
+        if (score >= 60) {
+            safeStore.set('thai_s2_' + currentLessonId, 'passed');
+        }
+
+        const nextBtn = document.getElementById('next-stage-btn');
+        if (currentLessonId < 18) {
+            nextBtn.style.display = 'inline-block';
+            nextBtn.innerText = `进入第 ${currentLessonId + 1} 讲 ➔`;
+        } else {
+            nextBtn.style.display = 'none';
+            remark.innerText += " 🏆 恭喜您完成了第二季全部 18 讲挑战！";
+        }
+    }
+
+    // 下一讲
+    function advanceNextLesson() {
+        if (currentLessonId < 18) {
+            launchLesson(currentLessonId + 1);
+        }
+    }
+
+    // 自启
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', openHome);
+    } else {
+        openHome();
+    }
+</script>
+
+</body>
+</html>
