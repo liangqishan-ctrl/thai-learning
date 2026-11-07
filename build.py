@@ -41,8 +41,9 @@ for li,l in enumerate(lessons):
             chosen=distractors[:]
             chosen.insert(answer,pi)
             options=[l['stories'][i][field] for i in chosen]
-            evidence=p['th'][:160] if qi==0 else p['th'][-170:]
-            questions.append({'prompt':l['prompt'] if qi==0 else '故事最后怎样解决，或出现了什么小插曲？','options':options,'answer':answer,'explanation':('关键信息：' if qi==0 else '故事结果：')+p[field]+'。对照原文：'+p['zh'],'evidence':evidence})
+            evidence=' '.join(p['th'].split(' ')[:3]) if qi==0 else p['th'][-170:]
+            explanation=('关键信息：'+p[field]+'。再听开头的要求、地点或时间；完整译文在两题下方。') if qi==0 else ('故事结果：'+p[field]+'。可以展开下方原文，核对误会和解决办法。')
+            questions.append({'prompt':l['prompt'] if qi==0 else '故事最后怎样解决，或出现了什么小插曲？','options':options,'answer':answer,'explanation':explanation,'evidence':evidence})
         p['questions']=questions
     for p in l['stories']:
         del p['fact'];del p['ending']
